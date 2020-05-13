@@ -9,8 +9,8 @@
             <span id="brand">Stopwatch</span>
         </div>
         <ul id="stopwatch-records">
-            <li :key="index" v-for="(lap, index) in laps"> <!-- [4] -->
-                <span>Lap {{ index + 1 }}</span>
+            <li :class="{ red: lap.isSlowest, green: lap.isFastest }" :key="index" v-for="(lap, index) in lapsRecords">  <!-- [2] -->
+                <span>Lap {{ lapsRecords.length - index }}</span>
                 <span>{{ lap.display }}</span>
             </li>
         </ul>
@@ -28,26 +28,81 @@
                 startTime: null,
                 stopTime: null,
                 stoppedTimeOffset: 0,
+                stoppedTimeOffsetForLap: 0,  // [1]
                 currentTime: null,
                 isStarted: false,
                 isStopped: false,
-                lastLapTime: null,  // [1]
-                laps: [],  // [2]
+                lastLapTime: null,
+                laps: [],
+            }
+        },
+        computed: {
+            lapsRecords() {  // [1]
+                let lapsClone = [...this.laps]
+
+                if (lapsClone.length > 2) {
+                    lapsClone = lapsClone.map((oneLap) => {
+                        return {
+                            ...oneLap,
+                            isFastest: false,
+                            isSlowest: false,
+                        }
+                    })
+
+                    let fastestIndex = 0
+                    let slowestIndex = 0
+
+                    for (let i = 0; i < lapsClone.length - 1; i++) {
+                        if (lapsClone[i].time < lapsClone[fastestIndex].time) {
+                            fastestIndex = i;
+                        }
+                        if (lapsClone[i].time > lapsClone[slowestIndex].time) {
+                            slowestIndex = i;
+                        }
+                    }
+
+                    lapsClone[fastestIndex].isFastest = true
+                    lapsClone[slowestIndex].isSlowest = true
+                }
+
+                return lapsClone.reverse()
+            }
+        },
+        watch: {  // [2]
+            displayTime() {
+                let lapsClone = [...this.laps];
+                console.log(lapsClone)
+
+                let elapsedTime = this.currentTime - this.lastLapTime - this.stoppedTimeOffsetForLap
+                let lapTime = (elapsedTime / 1000).toFixed(2)
+
+                lapsClone[this.laps.length - 1] = {
+                    time: parseFloat(lapTime),
+                    display: this.formatTime(lapTime),
+                    isFastest: false,
+                    isSlowest: false,
+                };
+
+                this.laps = lapsClone;
             }
         },
         methods: {
             startAndStopHandler() {  // [4]
-
                 if (!this.isStarted) {
                     this.startTime = Date.now()
-                    this.lastLapTime=Date.now()
+                    this.lastLapTime = Date.now()
 
                     this.timer = setInterval(() => {
                         this.currentTime = Date.now();
-                        let elapsedTime = this.currentTime - this.startTime
+                        let elapsedTime = this.currentTime - this.stoppedTimeOffset
                         this.displayTime = this.formatTime((elapsedTime / 1000).toFixed(2))
                     }, 10);
-
+                    this.laps = [{   // [1]
+                        time: 0,
+                        display: this.displayTime,
+                        isFastest: false,
+                        isSlowest: false,
+                    }];
                     this.isStarted = true
                     this.isStopped = false
                 } else if (this.isStarted && !this.isStopped) {
@@ -56,7 +111,7 @@
                     this.isStopped = true
                 } else if (this.isStarted && this.isStopped) {
                     this.stoppedTimeOffset += Date.now() - this.stopTime
-
+                    this.stoppedTimeOffsetForLap += Date.now() - this.stopTime
                     this.timer = setInterval(() => {
                         this.currentTime = Date.now();
                         let elapsedTime = this.currentTime - this.startTime - this.stoppedTimeOffset  // [6]
@@ -78,7 +133,7 @@
                     this.isStopped = false
                 } else if (this.isStarted && !this.isStopped) {
                     // Lap
-                    let elapsedTime = this.currentTime - this.lastLapTime
+                    let elapsedTime = this.currentTime - this.lastLapTime - this.stoppedTimeOffsetForLap
                     let lapTime = (elapsedTime / 1000).toFixed(2)
 
                     this.laps.push({  // [4]
@@ -87,6 +142,7 @@
                     })
 
                     this.lastLapTime = this.currentTime  // [5]
+                    this.stoppedTimeOffsetForLap=0
                 }
             },
             formatTime(seconds) {
