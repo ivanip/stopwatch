@@ -4,12 +4,16 @@
             {{ displayTime }}
         </div>
         <div id="stopwatch-controls">
-            <button id="reset-and-lap" @click="resetAndLapHandler">{{ (isStarted && !isStopped) ? 'Lap' : 'Reset' }}</button> <!-- [3] -->
-            <button id="start-and-stop" @click="startAndStopHandler" :class="{ red: isStarted && !isStopped }">{{ (isStarted && !isStopped) ? 'Stop' : 'Start' }}</button>
+            <button id="reset-and-lap" @click="resetAndLapHandler">{{ (isStarted && !isStopped) ? 'Lap' : 'Reset' }}
+            </button> <!-- [3] -->
+            <button id="start-and-stop" @click="startAndStopHandler" :class="{ red: isStarted && !isStopped }">{{
+                (isStarted && !isStopped) ? 'Stop' : 'Start' }}
+            </button>
             <span id="brand">Stopwatch</span>
         </div>
         <ul id="stopwatch-records">
-            <li :class="{ red: lap.isSlowest, green: lap.isFastest }" :key="index" v-for="(lap, index) in lapsRecords">  <!-- [2] -->
+            <li :class="{ red: lap.isSlowest, green: lap.isFastest }" :key="index" v-for="(lap, index) in lapsRecords">
+                <!-- [2] -->
                 <span>Lap {{ lapsRecords.length - index }}</span>
                 <span>{{ lap.display }}</span>
             </li>
@@ -71,7 +75,6 @@
         watch: {  // [2]
             displayTime() {
                 let lapsClone = [...this.laps];
-                console.log(lapsClone)
 
                 let elapsedTime = this.currentTime - this.lastLapTime - this.stoppedTimeOffsetForLap
                 let lapTime = (elapsedTime / 1000).toFixed(2)
@@ -94,7 +97,7 @@
 
                     this.timer = setInterval(() => {
                         this.currentTime = Date.now();
-                        let elapsedTime = this.currentTime - this.stoppedTimeOffset
+                        let elapsedTime = this.currentTime - this.startTime
                         this.displayTime = this.formatTime((elapsedTime / 1000).toFixed(2))
                     }, 10);
                     this.laps = [{   // [1]
@@ -131,6 +134,7 @@
                     clearInterval(this.timer)
                     this.isStarted = false
                     this.isStopped = false
+                    this.laps = []
                 } else if (this.isStarted && !this.isStopped) {
                     // Lap
                     let elapsedTime = this.currentTime - this.lastLapTime - this.stoppedTimeOffsetForLap
@@ -142,7 +146,7 @@
                     })
 
                     this.lastLapTime = this.currentTime  // [5]
-                    this.stoppedTimeOffsetForLap=0
+                    this.stoppedTimeOffsetForLap = 0
                 }
             },
             formatTime(seconds) {
