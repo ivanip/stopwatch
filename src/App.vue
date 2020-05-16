@@ -1,15 +1,18 @@
 <template>
     <div id="app">
-        <div id="stopwatch">
-            {{ displayTime }}
-        </div>
+        <timer :time="displayTime"/>
         <div id="stopwatch-controls">
-            <button id="reset-and-lap" @click="resetAndLapHandler">{{ (isStarted && !isStopped) ? 'Lap' : 'Reset' }}
-            </button> <!-- [3] -->
-            <button id="start-and-stop" @click="startAndStopHandler" :class="{ red: isStarted && !isStopped }">{{
-                (isStarted && !isStopped) ? 'Stop' : 'Start' }}
-            </button>
-            <span id="brand">Stopwatch</span>
+            <ResetAndLap
+                    @pressed="resetAndLapHandler"
+                    :started="isStarted"
+                    :stoped="isStopped"
+            />
+            <StartAndStopButton
+                    @pressed="startAndStopHandler"
+                    :started="isStarted"
+                    :stoped="isStopped"
+            />
+            <Bland>My Awesome Timer</Bland>
         </div>
         <ul id="stopwatch-records">
             <li :class="{ red: lap.isSlowest, green: lap.isFastest }" :key="index" v-for="(lap, index) in lapsRecords">
@@ -22,9 +25,14 @@
 </template>
 
 <script>
+    import Timer from './Timer.vue';
+    import Bland from "@/Brand";   //@/ 代表Root directory
+    import StartAndStopButton from "@/StartAndStopButton";
+    import ResetAndLap from "@/ResetAndLap";
+
     export default {
         name: 'app',
-        components: {},
+        components: {ResetAndLap, StartAndStopButton, Bland, Timer,},
         data() {
             return {
                 timer: null,
@@ -173,13 +181,6 @@
         color: #fff;
     }
 
-    #stopwatch {
-        flex: 0px 1 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 5rem;
-    }
 
     #stopwatch-records {
         flex: 0px 1 1;
@@ -226,44 +227,5 @@
         overflow: hidden;
         position: relative; /*遵循正常文檔流，依top,right,bottom,left等屬性進行絕對定位*/
         margin-bottom: 1.5rem;
-    }
-
-    /*
-    Tip X:
-    這個是常用的一個置中方法，使用絕對位置後，元素便脫離正常文檔流，
-    left和top分別是元素左外邊距邊界和上外邊跟邊界
-    transform是元素中心在X和Y軸傍移，它以元素自身的空間為座標
-    */
-    #brand {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translateX(-50%) translateY(-50%);
-    }
-
-    button#reset-and-lap, button#start-and-stop {
-        width: 80px;
-        height: 80px;
-        outline: none;
-        background-color: #333;
-        border: 2px solid #000;
-        border-radius: 100%;
-        color: #fff;
-        font-size: 1rem;
-        box-shadow: 0px 0px 0px 2px #333; /*X軸偏移，Y軸偏移，陰影模糊半徑，陰影擴散半徑、陰影顏色*/
-        float: left;
-    }
-
-    button#start-and-stop {
-        background-color: #082A12;
-        box-shadow: 0px 0px 0px 2px #082A12;
-        color: #2ED158;
-        float: right;
-    }
-
-    button#start-and-stop.red {
-        background-color: #320E0B;
-        box-shadow: 0px 0px 0px 2px #320E0B;
-        color: #FF453A;
     }
 </style>
