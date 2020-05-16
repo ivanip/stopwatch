@@ -219,14 +219,21 @@
         text-align: right;
     }
 
+    /*todo: 嘗試將stopwatch-controls改為Flex佈局*/
     #stopwatch-controls {
         flex: 80px 0 0;
         padding: .2rem 1.2rem;
         overflow: hidden;
-        position: relative;
+        position: relative; /*遵循正常文檔流，依top,right,bottom,left等屬性進行絕對定位*/
         margin-bottom: 1.5rem;
     }
 
+    /*
+    Tip X:
+    這個是常用的一個置中方法，使用絕對位置後，元素便脫離正常文檔流，
+    left和top分別是元素左外邊距邊界和上外邊跟邊界
+    transform是元素中心在X和Y軸傍移，它以元素自身的空間為座標
+    */
     #brand {
         position: absolute;
         left: 50%;
@@ -243,7 +250,7 @@
         border-radius: 100%;
         color: #fff;
         font-size: 1rem;
-        box-shadow: 0px 0px 0px 2px #333;
+        box-shadow: 0px 0px 0px 2px #333; /*X軸偏移，Y軸偏移，陰影模糊半徑，陰影擴散半徑、陰影顏色*/
         float: left;
     }
 
